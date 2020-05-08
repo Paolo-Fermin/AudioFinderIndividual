@@ -2,10 +2,11 @@ import numpy as np
 import math
 import pandas as pd
 import pdb
+import os
 
 f = 1000.0
 c = 343
-speaker_angle = 45
+speaker_angle = 120
 mic_distance = .1
 
 def adc(analog):
@@ -33,25 +34,22 @@ for i in range(int(n)):
     time[i] = format(t, '.6g') #limit significant figures
     phase_diff = getPhaseDiffFromAngle(speaker_angle)
     
-    #pdb.set_trace()
-
     left_signal[i] = adc(2.5 * np.cos(2*math.pi*f*t - phase_diff/2) + 2.5)
     right_signal[i] = adc(2.5 * np.cos(2*math.pi*f*t + phase_diff/2) + 2.5)
 
-    '''
-    if speaker_angle < 90: 
-        left_signal[i] = adc(2.5 * np.cos(2*math.pi*f*t) + 2.5)
-        right_signal[i] = adc(2.5 * np.cos(2*math.pi*f*t + phase_diff) + 2.5)
-    else:
-        left_signal[i] = adc(2.5 * np.cos(2*math.pi*f*t + phase_diff) + 2.5)
-        right_signal[i] = adc(2.5 * np.cos(2*math.pi*f*t) + 2.5)
-    '''
 #array now has all sinusoid values in two arrays
 #write arrays to file
 left_table = pd.DataFrame({'time':time, 'signal':left_signal})
 right_table = pd.DataFrame({'time':time, 'signal':right_signal})
 
-left_table.to_csv('left_signal.txt', index=False)
-right_table.to_csv('right_signal.txt', index=False)
+test_case_dir = os.path.join(os.getcwd(), 'test_cases', str(speaker_angle))
+
+os.mkdir(test_case_dir)
+
+left_filepath = os.path.join(test_case_dir, 'left_signal.txt')
+right_filepath = os.path.join(test_case_dir, 'right_signal.txt')
+
+left_table.to_csv(left_filepath, index=False)
+right_table.to_csv(right_filepath, index=False)
 
 
