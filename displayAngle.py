@@ -4,55 +4,66 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import pdb
 
-file1 = os.path.join(os.getcwd(), 'signal1.txt')
-file2 = os.path.join(os.getcwd(), 'signal2.txt')
 
-with open(file1, 'r') as left_signal:
-    csv_reader = csv.reader(left_signal, delimiter = '\n')
-    #for row in csv_reader:
-        #print(row)
-
-table = pd.read_table(file1, header=None, names=['Left'])
-table2 = pd.read_table(file2, header=None)
-table.insert(1, 'Right', table2, True)
-
-table['Difference'] = table['Left'] - table['Right']
-
-print(table['Difference'])
-avg_diff = table['Difference'].mean()
-
-print(table)
-print(avg_diff)
-
-left_max_index = table['Left'].idxmax()
-right_max_index = table['Right'].idxmax()
-
-print(left_max_index)
-print(right_max_index)
-
-c = 343
+c = 343.0
 l = .1
 T = 1e-3
 
-left_time = left_max_index * (T/len(table.index))
-right_time = right_max_index * (T/len(table.index))
+left_file = os.path.join(os.getcwd(), 'left_signal.txt')
+right_file = os.path.join(os.getcwd(), 'right_signal.txt')
+
+
+table = pd.read_csv(left_file)
+table.rename(columns={'signal':'left'}, inplace=True)
+table2 = pd.read_csv(right_file)
+#pdb.set_trace()
+
+table = table.join(table2['signal'])
+table.rename(columns={'signal':'right'}, inplace=True)
+
+left_min_index = table['left'].idxmin()
+right_min_index = table['right'].idxmin()
+
+print(left_min_index)
+print(right_min_index)
+
+
+time_interval = T / len(table.index)
+print("time interval = " + str(time_interval))
+
+left_time = table.loc[left_min_index, 'time']
+right_time = table.loc[right_min_index, 'time']
+deltaT = left_time - right_time
 
 print("left time = " + str(left_time))
 print("right time = " + str(right_time))
 
-left_dist = left_time * c
-right_dist = right_time * c
+left_dist = (left_time - right_time) * c
+right_dist = (right_time - left_time) * c
 
 print("left dist = " + str(left_dist))
 print("right dist = " + str(right_dist))
 
-if (left_time >= right_time) :
+def getAngleFromTime(deltaT):
+    return np.arccos(c * deltaT/l)
+
+#pdb.set_trace()
+'''
+if (left_dist > right_dist) :
+    distance = (right_time - left_time) * c
     angle = np.arccos(right_dist/l)
     angle_degrees = np.degrees(angle)
 else:
     angle = np.arccos(left_dist/l)
     angle_degrees = np.degrees(angle)
+'''
+
+angle = getAngleFromTime(deltaT)
+angle_degrees = np.degrees(angle)
+
+#pdb.set_trace()
 
 print("angle = " + str(angle))
 print("angle (degrees) = " + str(angle_degrees))
@@ -68,7 +79,7 @@ cir = Circle(origin, radius)
 cir.setWidth(5)
 cir.draw(win)
 
-endpoint = Point( origin.getX() + cir.getRadius() * np.cos(angle), origin.getX() - cir.getRadius() * np.sin(angle))
+endpoint = Point( origin.getX() + cir.getRadius() * np.cos(angle), origin.getY() - cir.getRadius() * np.sin(angle))
 
 angle_line = Line(origin, endpoint)
 angle_line.setFill('red')
