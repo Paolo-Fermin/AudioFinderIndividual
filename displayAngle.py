@@ -18,7 +18,7 @@ def getAngleFromTime(deltaT):
 #change this value to try different test cases
 #note that this value is NOT the value which is displayed but just to point to the 
 #correct data file
-TEST_CASE = '120'
+TEST_CASE = '45'
 
 #READ DATA
 left_filepath = os.path.join('test_cases', TEST_CASE, 'left_signal.txt')
@@ -45,6 +45,8 @@ deltaT = left_time - right_time
 angle = getAngleFromTime(deltaT)
 angle_degrees = np.degrees(angle)
 
+real_angle = int(TEST_CASE)
+error = abs(float((angle_degrees - real_angle) / real_angle) * 100)
 
 #DISPLAY DATA ON GUI
 win = GraphWin('Speaker Angle', 1000, 750)
@@ -69,6 +71,12 @@ title.draw(win)
 
 angle_label = Text(Point(win.getWidth() / 2 - 30, 50), "{:.2f} degrees".format(angle_degrees))
 angle_label.draw(win)
+
+real_label = Text(Point(win.getWidth() / 2 - 30, 70), "Real Value: {:.2f} degrees".format(real_angle))
+real_label.draw(win)
+
+error_label = Text(Point(win.getWidth() / 2 - 30, 90), "Error: {:.2f} %".format(error))
+error_label.draw(win)
 
 #pause to view results
 win.getMouse()
